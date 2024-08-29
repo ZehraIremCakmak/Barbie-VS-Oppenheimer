@@ -1,0 +1,146 @@
+---
+title: "Barbie vs Openheimer"
+author: "Zehra İrem ÇAKMAK"
+date: "2024-04-01"
+output:
+  html_document:
+    toc: true
+  word_document:
+    toc: true
+---
+# Barbi vs Oppenheimer Emoji Analizi
+
+$\color{purple}{\text{Barbie ve Oppenheimer filmlerinin fragmanlarına gelen yorumlar üzerinden karşılaştırmalı emoji analizi yapalım.}}$ 
+
+## Verilerin Çekildiği Youtube Videoları
+
+<iframe src="https://www.youtube.com/embed/pBk4NYhWNMM" width="640" height="360" data-external= "1" > </iframe>
+
+
+<iframe src="https://www.youtube.com/embed/uYPbbksJxIg" width="640" height="360" data-external= "1" > </iframe>
+
+
+
+# Kullanılan kütüphaneler
+
+```{r, warning=FALSE, message=FALSE}
+library(stringi)
+library(dplyr)
+library(ggplot2)
+library(emojifont)
+library(showtext)
+library(gridExtra)
+library(htmltools)
+library(wordcloud2)
+```
+
+## Önceden Çekmiş Olduğumuz Fragman Verilerini Okutuyoruz
+
+```{r}
+barbie_tum_yorumlar<- read.csv(file.choose(),header = T, sep = ",")
+```
+
+```{r}
+oppenheimer_tum_yorumlar <- read.csv(file.choose(),header = T, sep = ",")
+```
+
+### Çekilen Yorumların Emojilerini Ayıklıyoruz
+
+```{r}
+barbie_emoji <- stringi::stri_extract_all_regex(barbie_tum_yorumlar$textOriginal, "\\p{So}")
+```
+
+```{r}
+oppenheimer_emoji <- stringi::stri_extract_all_regex(oppenheimer_tum_yorumlar$textOriginal, "\\p{So}")
+```
+
+### Filmler İçin Emoji Tablosu Yapıyoruz
+
+```{r}
+barbie_emoji_tablosu <- table(unlist(barbie_emoji))
+barbie_emoji_df <- data.frame(emoji = names(barbie_emoji_tablosu),
+                       tekrar_sayisi = as.numeric(barbie_emoji_tablosu)) %>%
+  arrange(desc(tekrar_sayisi)) %>%
+  slice_head(n = 30)
+
+```
+
+```{r}
+oppenheimer_emoji_tablosu <- table(unlist(oppenheimer_emoji))
+oppenheimer_emoji_df <- data.frame(emoji = names(oppenheimer_emoji_tablosu),
+                       tekrar_sayisi = as.numeric(oppenheimer_emoji_tablosu)) %>%
+  arrange(desc(tekrar_sayisi)) %>%
+  slice_head(n = 30)
+
+```
+
+### En Çok Kullanılan 30 Emojiyi Görmek İçin Tablo Yapıyoruz
+
+```{r}
+barbie_grafik <- ggplot(barbie_emoji_df, aes(x = emoji, y = tekrar_sayisi)) +
+  geom_col(fill = 'pink') +
+  geom_text(aes(label = emoji), vjust = -0.1, family="EmojiOne", size = 9,color='purple') +
+  labs(title = "Barbie En Çok Tekrar Edilen 30 Emoji Dağılımı",
+       x = "Emoji",
+       y = "Tekrar Sayısı") +
+  theme_minimal() +
+  theme(legend.position = "none", 
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+barbie_grafik
+```
+
+<img src="barbie.jfif" alt="assad">
+
+
+```{r}
+oppenheimer_grafik <- ggplot(oppenheimer_emoji_df, aes(x = emoji, y = tekrar_sayisi)) +
+  geom_col(fill = 'grey') +
+  geom_text(aes(label = emoji), vjust = -0.1, family="EmojiOne", size = 9, color='black') +
+  labs(title = "Oppenheimer En Çok Tekrar Edilen 30 Emoji Dağılımı",
+       x = "Emoji",
+       y = "Tekrar Sayısı") +
+  theme_minimal() +
+  theme(legend.position = "none", 
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+oppenheimer_grafik
+
+```
+
+<img src="oppenheimer.jfif" alt="assad">
+
+```{r}
+combined_plots <- grid.arrange(barbie_grafik, oppenheimer_grafik, ncol = 1.5)
+print(combined_plots)
+```
+
+### En Çok Kullanılan Emojilerin Kelime Bulutu
+
+
+<h1>$\color{pink}{\text{Barbie Emoji Bulutu}}$</h1>
+
+
+```{r}
+a = wordcloud2::wordcloud2(barbie_emoji_df,color = "pink",size = 1.5)
+
+htmlwidgets::saveWidget(widget = a,
+                        file = "a.html",
+                        selfcontained = TRUE)
+
+```
+
+<iframe src = "a.html" width = "1000" height = "1000"></iframe>
+
+
+<h1>$\color{brown}{\text{Oppenheimer Emoji Bulutu}}$</h1>
+
+```{r}
+b = wordcloud2::wordcloud2(oppenheimer_emoji_df,color = "grey",size=1.5)
+
+htmlwidgets::saveWidget(widget = b,
+                        file = "b.html",
+                        selfcontained = TRUE)
+```
+
+<iframe src = "b.html" width = "1000" height = "1000"></iframe>
